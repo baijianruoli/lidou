@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl implements UserService {
 
+
+
+
     @Override
-    public BaseResponse add(String msg) {
-        return new BaseResponse<String>(StatusCode.Success,msg+"我是服务端");
+    public BaseResponse add(String msg, int id) {
+        return new BaseResponse<String>(StatusCode.Success,id+msg);
     }
 
     @Override

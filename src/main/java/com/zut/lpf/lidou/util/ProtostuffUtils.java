@@ -60,7 +60,7 @@ public class ProtostuffUtils {
         private static <T> Schema<T> getSchema(Class<T> clazz) {
             Schema<T> schema = (Schema<T>) schemaCache.get(clazz);
             if (Objects.isNull(schema)) {
-                System.out.println(11);
+
                 //这个schema通过RuntimeSchema进行懒创建并缓存
                 //所以可以一直调用RuntimeSchema.getSchema(),这个方法是线程安全的
                 schema = RuntimeSchema.getSchema(clazz);

@@ -13,6 +13,8 @@ public class MessageServiceImpl implements MessageService {
         return new BaseResponse<String>(StatusCode.Success,msg);
     }
 
+
+
     @Override
     public BaseResponse<String> get(String msg) {
         return new BaseResponse<String>(StatusCode.Success,msg);

@@ -10,6 +10,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -52,6 +54,7 @@ public class InitRpcConfig implements CommandLineRunner {
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast(new ServerDecode());
                         pipeline.addLast(new ServerEncode());
+                        pipeline.addLast(new IdleStateHandler(10,10,10, TimeUnit.SECONDS));
                         pipeline.addLast(new ServerHandler());
                     }
                 });
