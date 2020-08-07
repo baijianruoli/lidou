@@ -8,7 +8,8 @@ import java.lang.reflect.Method;
 
 public class text {
     public static void main(String[] args) throws InvocationTargetException, IllegalAccessException {
-
+        String[] split = new String("com.zut.lpf.lidou.service.UserService").split("\\.");
+        System.out.println(split.length);
 
     }
 }

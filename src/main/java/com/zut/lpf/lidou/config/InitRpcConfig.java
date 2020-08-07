@@ -54,7 +54,7 @@ public class InitRpcConfig implements CommandLineRunner {
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast(new ServerDecode());
                         pipeline.addLast(new ServerEncode());
-                        pipeline.addLast(new IdleStateHandler(10,10,10, TimeUnit.SECONDS));
+                        pipeline.addLast(new IdleStateHandler(100,100,100, TimeUnit.SECONDS));
                         pipeline.addLast(new ServerHandler());
                     }
                 });
