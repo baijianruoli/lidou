@@ -13,6 +13,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -29,11 +30,15 @@ public class InitRpcConfig implements CommandLineRunner {
     @Autowired
     private ApplicationContext applicationContext;
     public static Map<String,Object> rpcServiceMap=new HashMap<>();
+    @Value("${lidou.port}")
+    private Integer port;
     @Override
     public void run(String... args) throws Exception {
 
-        Map<String,Object> beansWithAnnoatation=applicationContext.getBeansWithAnnotation(Service.class);
-        for(Object bean: beansWithAnnoatation.values())
+
+        Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(LidouService.class);
+
+        for(Object bean: beansWithAnnotation.values())
         {
             Class<?> clazz=bean.getClass();
             Class<?>[] interfaces=clazz.getInterfaces();
@@ -58,7 +63,7 @@ public class InitRpcConfig implements CommandLineRunner {
                         pipeline.addLast(new ServerHandler());
                     }
                 });
-        ChannelFuture future= serverBootstrap.bind("localhost", 9091).sync();
+        ChannelFuture future= serverBootstrap.bind("localhost", port).sync();
         System.out.println("服务端启动");
         future.channel().closeFuture().sync();
     }

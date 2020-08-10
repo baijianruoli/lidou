@@ -1,11 +1,13 @@
 package com.zut.lpf.lidou.service.impl;
 
+import com.zut.lpf.lidou.config.LidouService;
 import com.zut.lpf.lidou.service.MessageService;
 import com.zut.lpf.lidou.util.BaseResponse;
 import com.zut.lpf.lidou.util.StatusCode;
 import org.springframework.stereotype.Service;
 
-@Service
+
+@LidouService
 public class MessageServiceImpl implements MessageService {
 
     @Override
