@@ -23,10 +23,9 @@ public  class  BeanScannerConfigurer implements BeanFactoryPostProcessor, Applic
     @Override
     public  void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         AnnotationScanner scanner = AnnotationScanner.getScanner((BeanDefinitionRegistry) configurableListableBeanFactory, LidouService.class);
-
+        String property = applicationContext.getEnvironment().getProperty("lidou.servicePackage");
         scanner.setResourceLoader(applicationContext);
-        int count=scanner.scan("*");
-        System.out.println("扫描的数量"+count);
+        int count=scanner.scan(property);
         Map<String, Object> beansWithAnnotation = configurableListableBeanFactory.getBeansWithAnnotation(LidouService.class);
     }
 

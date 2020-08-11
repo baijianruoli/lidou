@@ -34,10 +34,7 @@ public class InitRpcConfig implements CommandLineRunner {
     private Integer port;
     @Override
     public void run(String... args) throws Exception {
-
-
         Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(LidouService.class);
-
         for(Object bean: beansWithAnnotation.values())
         {
             Class<?> clazz=bean.getClass();
@@ -46,7 +43,6 @@ public class InitRpcConfig implements CommandLineRunner {
             {
                 rpcServiceMap.put(inter.getName(),bean);
                 log.info("已经加载的服务"+inter.getName());
-
             }
         }
         NioEventLoopGroup bossGroup=new NioEventLoopGroup(1);
@@ -64,7 +60,7 @@ public class InitRpcConfig implements CommandLineRunner {
                     }
                 });
         ChannelFuture future= serverBootstrap.bind("localhost", port).sync();
-        System.out.println("服务端启动");
+        log.info("服务端启动");
         future.channel().closeFuture().sync();
     }
 

@@ -63,18 +63,19 @@ public class ServerHandler extends ChannelInboundHandlerAdapter  {
         Class<?>[] parameTypes = request.getParameTypes();
         Object[] parameters = request.getParameters();
         Object o = InitRpcConfig.rpcServiceMap.get(className);
-        BaseResponse message=null;
+        Object message=null;
         try{
             Method declaredMethod = o.getClass().getDeclaredMethod(methodName, parameTypes);
             Object invoke = declaredMethod.invoke(o, parameters);
-            message=(BaseResponse)invoke;
+            Class<?> returnType = declaredMethod.getReturnType();
+            message=invoke;
 
         }catch (NoSuchMethodException e)
         {
             log.info("bean实例化未找到");
             ctx.writeAndFlush(new BaseResponse<String>(StatusCode.Fail,e.getMessage()));
         }
-        ctx.writeAndFlush(message);
+        ctx.writeAndFlush(new BaseResponse(StatusCode.Success,message));
 
 
     }
