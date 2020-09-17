@@ -1,4 +1,4 @@
-package com.zut.lpf.lidou.config;
+package io.github.baijianruoli.lidou.config;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -57,4 +57,5 @@ public class AnnotationScanner extends ClassPathBeanDefinitionScanner {
         return super.isCandidateComponent(beanDefinition)
                 && beanDefinition.getMetadata().hasAnnotation(this.selfAnnotationClazz.getName());
     }
+
 }

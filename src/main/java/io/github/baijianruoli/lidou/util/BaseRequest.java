@@ -1,4 +1,4 @@
-package com.zut.lpf.lidou.util;
+package io.github.baijianruoli.lidou.util;
 
 import lombok.Data;
 

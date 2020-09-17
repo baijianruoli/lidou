@@ -1,7 +1,5 @@
-package com.zut.lpf.lidou.config;
+package io.github.baijianruoli.lidou.config;
 
-
-import org.springframework.stereotype.Service;
 
 import java.lang.annotation.*;
 

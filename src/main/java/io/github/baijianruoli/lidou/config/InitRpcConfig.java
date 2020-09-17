@@ -1,8 +1,8 @@
-package com.zut.lpf.lidou.config;
+package io.github.baijianruoli.lidou.config;
 
-import com.zut.lpf.lidou.code.ServerDecode;
-import com.zut.lpf.lidou.code.ServerEncode;
-import com.zut.lpf.lidou.handler.ServerHandler;
+import io.github.baijianruoli.lidou.handler.ServerHandler;
+import io.github.baijianruoli.lidou.code.ServerDecode;
+import io.github.baijianruoli.lidou.code.ServerEncode;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,8 +1,7 @@
-package com.zut.lpf.lidou.code;
+package io.github.baijianruoli.lidou.code;
 
-import com.zut.lpf.lidou.util.BaseRequest;
-import com.zut.lpf.lidou.util.BaseResponse;
-import com.zut.lpf.lidou.util.ProtostuffUtils;
+import io.github.baijianruoli.lidou.util.BaseResponse;
+import io.github.baijianruoli.lidou.util.ProtostuffUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;

@@ -1,4 +1,4 @@
-package com.zut.lpf.lidou.util;
+package io.github.baijianruoli.lidou.util;
 
 import com.dyuproject.protostuff.LinkedBuffer;
 import com.dyuproject.protostuff.ProtostuffIOUtil;

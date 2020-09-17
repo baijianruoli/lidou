@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.baijianruoli.lidou.config.BeanScannerConfigurer,io.github.baijianruoli.lidou.config.InitRpcConfig
+

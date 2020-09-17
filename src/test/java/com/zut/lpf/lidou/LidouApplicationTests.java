@@ -8,6 +8,7 @@ class LidouApplicationTests {
 
     @Test
     void contextLoads() {
+        System.out.println(1);
     }
 
 }

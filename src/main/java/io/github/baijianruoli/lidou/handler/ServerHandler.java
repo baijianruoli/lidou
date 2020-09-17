@@ -1,18 +1,15 @@
-package com.zut.lpf.lidou.handler;
+package io.github.baijianruoli.lidou.handler;
 
-import com.zut.lpf.lidou.config.InitRpcConfig;
-import com.zut.lpf.lidou.util.BaseRequest;
-import com.zut.lpf.lidou.util.BaseResponse;
-import com.zut.lpf.lidou.util.StatusCode;
+import io.github.baijianruoli.lidou.config.InitRpcConfig;
+import io.github.baijianruoli.lidou.util.BaseRequest;
+import io.github.baijianruoli.lidou.util.BaseResponse;
+import io.github.baijianruoli.lidou.util.StatusCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class ServerHandler extends ChannelInboundHandlerAdapter  {
@@ -49,6 +46,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter  {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
        ctx.close();
+       cause.printStackTrace();
        log.info("发生了异常{}",cause.getMessage());
     }
 
