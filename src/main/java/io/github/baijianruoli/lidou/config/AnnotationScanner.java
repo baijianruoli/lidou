@@ -16,12 +16,10 @@ public class AnnotationScanner extends ClassPathBeanDefinitionScanner {
      */
     @Setter
     private Class<? extends Annotation> selfAnnotationClazz;
-
     /**
      * 传值使用的临时静态变量
      */
     private static Class<? extends Annotation> staticTempAnnotationClazz = null;
-
     /**
      * 因构造函数无法传入指定的Annotation类，需使用静态方法来调用
      * @param registry

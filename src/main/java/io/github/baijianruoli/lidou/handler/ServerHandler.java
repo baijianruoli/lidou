@@ -45,16 +45,15 @@ public class ServerHandler extends ChannelInboundHandlerAdapter  {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-       ctx.close();
+       ctx.channel().close();
        cause.printStackTrace();
        log.info("发生了异常{}",cause.getMessage());
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
         BaseRequest request = (BaseRequest) msg;
-        if(request.getClassName().equals("heart"))
+        if("heart".equals(request.getClassName()))
             return ;
         String className = request.getClassName();
         String methodName = request.getMethodName();

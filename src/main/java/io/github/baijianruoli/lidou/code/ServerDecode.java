@@ -16,7 +16,6 @@ public class ServerDecode  extends ByteToMessageDecoder{
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
         BaseRequest deserialize = ProtostuffUtils.deserialize(bytes, BaseRequest.class);
-
         list.add(deserialize);
     }
 }
