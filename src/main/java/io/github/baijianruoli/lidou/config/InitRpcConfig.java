@@ -3,6 +3,7 @@ package io.github.baijianruoli.lidou.config;
 import io.github.baijianruoli.lidou.handler.ServerHandler;
 import io.github.baijianruoli.lidou.code.ServerDecode;
 import io.github.baijianruoli.lidou.code.ServerEncode;
+import io.github.baijianruoli.lidou.util.PathUtils;
 import io.github.baijianruoli.lidou.util.ZkVo;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -32,7 +33,6 @@ public class InitRpcConfig implements CommandLineRunner {
 
     @Autowired
     private ApplicationContext applicationContext;
-
     public static Map<String,Object> rpcServiceMap=new HashMap<>();
     @Value("${lidou.port}")
     private Integer port;
@@ -45,9 +45,9 @@ public class InitRpcConfig implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         //获取@LidouService注解标记的类
-     init();
+        init();
         NioEventLoopGroup bossGroup=new NioEventLoopGroup(1);
-        NioEventLoopGroup groupGroup=new NioEventLoopGroup();
+        NioEventLoopGroup groupGroup=new NioEventLoopGroup(4);
         ServerBootstrap serverBootstrap=new ServerBootstrap();
         serverBootstrap.group(bossGroup,groupGroup).channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -78,8 +78,10 @@ public class InitRpcConfig implements CommandLineRunner {
                 log.info("已经加载的服务"+inter.getName());
                 InetAddress address = InetAddress.getLocalHost();
                 String hostAddress = address.getHostAddress();
-                zkClient.createPersistent("/lidou/"+inter.getName()+"/providers/lidou"+hostAddress+":"+port,true);
-                zkClient.writeData("/lidou/"+inter.getName()+"/providers/lidou"+hostAddress+":"+port,hostAddress+":"+port);
+                String next=hostAddress+":"+port;
+                zkClient.createPersistent(PathUtils.addZkPath(inter.getName()) ,true);
+                zkClient.createEphemeral(PathUtils.addZkPath(inter.getName())+"/lidou"+next);
+                zkClient.writeData(PathUtils.addZkPath(inter.getName())+"/lidou"+next,next);
 
 
             }

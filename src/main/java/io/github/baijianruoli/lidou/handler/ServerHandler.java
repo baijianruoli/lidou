@@ -13,7 +13,6 @@ import java.lang.reflect.Method;
 
 @Slf4j
 public class ServerHandler extends ChannelInboundHandlerAdapter  {
-
     private int lossCount=0;
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -46,7 +45,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter  {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
        ctx.channel().close();
-       cause.printStackTrace();
+//       cause.printStackTrace();
        log.info("发生了异常{}",cause.getMessage());
     }
 
@@ -73,15 +72,16 @@ public class ServerHandler extends ChannelInboundHandlerAdapter  {
             ctx.writeAndFlush(new BaseResponse<String>(StatusCode.Fail,e.getMessage()));
         }
         ctx.writeAndFlush(new BaseResponse(StatusCode.Success,message));
+    }
 
-
+    @Override
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        log.info("{}离开注册中心",ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
        log.info("{}加入注册中心",ctx.channel().remoteAddress());
-
-
     }
 
 
