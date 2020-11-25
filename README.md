@@ -22,9 +22,14 @@
 - [x] 心跳检测
 - [x] 自定义注解（现在客户端只要在Service上加上@Reference，自动注入代理对象,调用本地方法一样调用远程方法）
 - [x] 加入zookeeper注册中心，提供简单的负载均衡(1.随机算法 2.轮询算法)
+- [x]  加入maven中央仓库，方便使用
+<dependency>
+  <groupId>io.github.baijianruoli</groupId>
+  <artifactId>lidou</artifactId>
+  <version>1.0.0</version>
+</dependency>
 
 # 缺少的功能
-- [ ]  加入maven中央仓库，方便使用
 - [ ]  提供更丰富的负载均衡策略
 - [ ]  提高并发
 
