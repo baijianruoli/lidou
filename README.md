@@ -15,19 +15,30 @@
 
 # 实现需求
 - [x] jdk动态代理，获得调用方法的类全路径，方法参数，类型，和名称
+
 - [x] protobuf序列化传输数据
+
 - [x] netty进行服务间的通信
+
 - [x] 多线程
+
 - [x] 反射
+
 - [x] 心跳检测
+
 - [x] 自定义注解（现在客户端只要在Service上加上@Reference，自动注入代理对象,调用本地方法一样调用远程方法）
+
 - [x] 加入zookeeper注册中心，提供简单的负载均衡(1.随机算法 2.轮询算法)
-- [x]  加入maven中央仓库，方便使用
-<dependency>
-  <groupId>io.github.baijianruoli</groupId>
-  <artifactId>lidou</artifactId>
-  <version>1.0.0</version>
-</dependency>
+
+- [x] 加入maven中央仓库，方便使用
+
+- [ ] > <dependency>
+  >   <groupId>io.github.baijianruoli</groupId>
+  >   <artifactId>lidou</artifactId>
+  >   <version>1.0.0</version>
+  > </dependency>
+
+
 
 # 缺少的功能
 - [ ]  提供更丰富的负载均衡策略
