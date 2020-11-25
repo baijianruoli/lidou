@@ -3,11 +3,13 @@
 
 # Apache Maven
 
-> <dependency>
-> <groupId>io.github.baijianruoli</groupId>
-> <artifactId>lidou</artifactId>
-> <version>1.0.0</version>
-> </dependency>
+```
+<dependency>
+  <groupId>io.github.baijianruoli</groupId>
+  <artifactId>lidou</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
 
 # 使用方法
 
