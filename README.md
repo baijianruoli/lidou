@@ -1,6 +1,14 @@
 # lidou
 基于spring boot,netty和zookeeper的自制rpc框架（服务端）
 
+# Apache Maven
+
+> <dependency>
+> <groupId>io.github.baijianruoli</groupId>
+> <artifactId>lidou</artifactId>
+> <version>1.0.0</version>
+> </dependency>
+
 # 使用方法
 
 1.在配置文件上配置lidou.port,设置服务器netty端口
@@ -31,14 +39,6 @@
 - [x] 加入zookeeper注册中心，提供简单的负载均衡(1.随机算法 2.轮询算法)
 
 - [x] 加入maven中央仓库，方便使用
-
-- [ ] > <dependency>
-  >   <groupId>io.github.baijianruoli</groupId>
-  >   <artifactId>lidou</artifactId>
-  >   <version>1.0.0</version>
-  > </dependency>
-
-
 
 # 缺少的功能
 - [ ]  提供更丰富的负载均衡策略
