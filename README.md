@@ -10,11 +10,6 @@
   <version>1.0.0</version>
 </dependency>
 ```
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 935f476da62a293b909223b0ed253d02ab13b5c8
 
 # 使用方法
 
