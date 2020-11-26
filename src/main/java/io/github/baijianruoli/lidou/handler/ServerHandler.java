@@ -63,9 +63,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter  {
         try{
             Method declaredMethod = o.getClass().getDeclaredMethod(methodName, parameTypes);
             Object invoke = declaredMethod.invoke(o, parameters);
-            Class<?> returnType = declaredMethod.getReturnType();
             message=invoke;
-
         }catch (NoSuchMethodException e)
         {
             log.info("bean实例化未找到");
