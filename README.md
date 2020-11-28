@@ -1,5 +1,5 @@
 # lidou
-基于spring boot,netty和zookeeper的自制rpc框架（服务端）
+基于spring boot,netty和zookeeper的自制rpc框架
 
 # Apache Maven
 
@@ -15,13 +15,13 @@
 
 1.在配置文件上配置lidou.port,设置服务器netty端口
 
-2.服务端和客户端的Service全路径一定要一样
+2.在配置中心配置lidou.servicePackage,是Service的扫描路径
 
-3.在Service上标记@LidouService注解，使其作为远程服务的Service
+3.在配置文件加上lidou.zookeeper.url，为zookeeper的注册地址
 
-4.在配置中心配置lidou.servicePackage,是Service的扫描路径
+4.在Service上标记@LidouService注解，使其作为远程服务的Service
 
-5.在配置文件加上lidou.zookeeper.url，为zookeeper的注册地址
+5.使用@Reference标记要注入的代理对象
 
 # 实现需求
 - [x] jdk动态代理，获得调用方法的类全路径，方法参数，类型，和名称
