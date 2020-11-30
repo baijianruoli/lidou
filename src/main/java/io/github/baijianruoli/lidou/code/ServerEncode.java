@@ -11,7 +11,6 @@ public class ServerEncode extends MessageToByteEncoder<BaseResponse> {
 
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, BaseResponse baseResponse, ByteBuf byteBuf) throws Exception {
-        System.out.println("发送"+baseResponse);
         byteBuf.writeBytes(ProtostuffUtils.serialize(baseResponse));
     }
 }

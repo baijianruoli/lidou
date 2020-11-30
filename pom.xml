@@ -13,7 +13,7 @@
     </parent>
     <groupId>io.github.baijianruoli</groupId>
     <artifactId>lidou</artifactId>
-    <version>1.0.0</version>
+    <version>1.2.0</version>
     <name>lidou</name>
     <description>RPC framework based on spring boot and netty </description>
     <licenses>
@@ -115,7 +115,7 @@
         </repository>
     </distributionManagement>
     <properties>
-        <java.version>11</java.version>
+        <java.version>8</java.version>
     </properties>
 
     <dependencies>

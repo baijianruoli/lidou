@@ -13,7 +13,7 @@ public class ZkClientConfig {
     @Bean
     public ZkClient zkcline()
     {
-        ZkClient zkClient = new ZkClient(ZkUrl , 3000);
+        ZkClient zkClient = new ZkClient(ZkUrl , 100,1000);
         zkClient.setZkSerializer( new MyZkSerializer());
         return zkClient;
     }

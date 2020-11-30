@@ -74,12 +74,12 @@ public class ServerHandler extends ChannelInboundHandlerAdapter  {
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        log.info("{}离开注册中心",ctx.channel().remoteAddress());
+//        log.info("{}离开注册中心",ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-       log.info("{}加入注册中心",ctx.channel().remoteAddress());
+//       log.info("{}加入注册中心",ctx.channel().remoteAddress());
     }
 
 

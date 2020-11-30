@@ -56,6 +56,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter implements Calla
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-       log.info("离开{}",ctx.channel().remoteAddress());
+//       log.info("离开{}",ctx.channel().remoteAddress());
     }
 }
