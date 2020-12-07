@@ -10,6 +10,7 @@ public class BaseRequest {
     private String methodName;
     private Object[] parameters;
     private Class<?>[] parameTypes;
+
     public BaseRequest(String className) {
         this.className = className;
     }

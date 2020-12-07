@@ -16,28 +16,23 @@ public class LoadBalanceServiceImpl implements LoadBalanceService {
     private ZkClient zkClient;
 
     @Override
-    public String loadBalance(String path, List<String> children,String mode) {
-        if("random".equals(mode))
-        {
-            path+="/"+children.get(new Random().nextInt(children.size()));
-        }else if("roundrobin".equals(mode))
-        {
+    public String loadBalance(String path, List<String> children, String mode) {
+        if ("random".equals(mode)) {
+            path += "/" + children.get(new Random().nextInt(children.size()));
+        } else if ("roundrobin".equals(mode)) {
             Integer index;
-            if(!GlobalReferenceMap.REFERENCEMAP.containsKey(path))
-            {
-                GlobalReferenceMap.REFERENCEMAP.put(path,0);
-                index=1%children.size();
+            if (!GlobalReferenceMap.REFERENCEMAP.containsKey(path)) {
+                GlobalReferenceMap.REFERENCEMAP.put(path, 0);
+                index = 1 % children.size();
+            } else {
+                index = GlobalReferenceMap.REFERENCEMAP.get(path);
+                GlobalReferenceMap.REFERENCEMAP.put(path, (index + 1) % children.size());
             }
-            else
-            {
-                index= GlobalReferenceMap.REFERENCEMAP.get(path);
-                GlobalReferenceMap.REFERENCEMAP.put(path,(index+1)%children.size());
-            }
-            path+="/"+children.get(index);
-        }else{
-            path+="/"+children.get(new Random().nextInt(children.size()));
+            path += "/" + children.get(index);
+        } else {
+            path += "/" + children.get(new Random().nextInt(children.size()));
         }
-        String temp = (String)zkClient.readData(path);
+        String temp = (String) zkClient.readData(path);
         return temp;
     }
 }

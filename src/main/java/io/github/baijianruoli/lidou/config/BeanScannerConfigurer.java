@@ -11,23 +11,23 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public  class  BeanScannerConfigurer implements BeanFactoryPostProcessor, ApplicationContextAware {
+public class BeanScannerConfigurer implements BeanFactoryPostProcessor, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
 
     @Override
-    public  void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         AnnotationScanner scanner = AnnotationScanner.getScanner((BeanDefinitionRegistry) configurableListableBeanFactory, LidouService.class);
         String property = applicationContext.getEnvironment().getProperty("lidou.servicePackage");
-        if(property==null)
-            property="io.github.baijianruoli";
+        if (property == null)
+            property = "io.github.baijianruoli";
         scanner.setResourceLoader(applicationContext);
-        int count=scanner.scan(property);
+        int count = scanner.scan(property);
     }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-           this.applicationContext=applicationContext;
+        this.applicationContext = applicationContext;
     }
 }

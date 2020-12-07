@@ -19,35 +19,38 @@ public class ClientHandler extends ChannelInboundHandlerAdapter implements Calla
     private ChannelHandlerContext context;
     private Object result;
     private BaseRequest pars;
-    private   Semaphore semaphore=new Semaphore(0);
-    private Semaphore resultLock=new Semaphore(0);
+    private Semaphore semaphore = new Semaphore(0);
+    private Semaphore resultLock = new Semaphore(0);
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            IdleStateEvent event = (IdleStateEvent)evt;
+            IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.WRITER_IDLE) {
                 ctx.writeAndFlush(new BaseRequest("heart"));
             }
         }
     }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.channel().close();
         log.error("{}异常", cause.getMessage());
     }
+
     @Override
-    public  void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        this.result =((BaseResponse) msg).getData();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        this.result = ((BaseResponse) msg).getData();
         resultLock.release();
     }
+
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         this.context = ctx;
         semaphore.release();
     }
 
-    public  Object call() throws Exception {
+    public Object call() throws Exception {
         semaphore.acquire();
         this.context.channel().writeAndFlush(this.pars);
         resultLock.acquire();

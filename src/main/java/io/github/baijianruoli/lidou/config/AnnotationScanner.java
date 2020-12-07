@@ -20,13 +20,15 @@ public class AnnotationScanner extends ClassPathBeanDefinitionScanner {
      * 传值使用的临时静态变量
      */
     private static Class<? extends Annotation> staticTempAnnotationClazz = null;
+
     /**
      * 因构造函数无法传入指定的Annotation类，需使用静态方法来调用
+     *
      * @param registry
      * @param clazz
      * @return
      */
-    public static synchronized AnnotationScanner getScanner(BeanDefinitionRegistry registry, Class<? extends Annotation> clazz){
+    public static synchronized AnnotationScanner getScanner(BeanDefinitionRegistry registry, Class<? extends Annotation> clazz) {
         staticTempAnnotationClazz = clazz;
         AnnotationScanner scanner = new AnnotationScanner(registry);
         scanner.setSelfAnnotationClazz(clazz);

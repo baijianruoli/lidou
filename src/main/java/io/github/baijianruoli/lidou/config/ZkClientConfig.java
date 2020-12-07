@@ -10,11 +10,11 @@ public class ZkClientConfig {
 
     @Value("${lidou.zookeeper.url}")
     private String ZkUrl;
+
     @Bean
-    public ZkClient zkcline()
-    {
-        ZkClient zkClient = new ZkClient(ZkUrl , 100,1000);
-        zkClient.setZkSerializer( new MyZkSerializer());
+    public ZkClient zkcline() {
+        ZkClient zkClient = new ZkClient(ZkUrl, 100, 1000);
+        zkClient.setZkSerializer(new MyZkSerializer());
         return zkClient;
     }
 }

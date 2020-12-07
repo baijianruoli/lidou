@@ -8,21 +8,22 @@ import java.io.Serializable;
 
 /**
  * 通用的响应封装类
+ *
  * @Author:debug (SteadyJack)
  * @Date: 2019/7/29 14:33
  **/
 @Data
-public class BaseResponse<T>  implements Serializable {
+public class BaseResponse<T> implements Serializable {
 
     private Integer code;
     private String msg;
 
     private T data;
 
-     public BaseResponse()
-     {
+    public BaseResponse() {
 
-     }
+    }
+
     public BaseResponse(StatusCode statusCode) {
         this.code = statusCode.getCode();
         this.msg = statusCode.getMsg();

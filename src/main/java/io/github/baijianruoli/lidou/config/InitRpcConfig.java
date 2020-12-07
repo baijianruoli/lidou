@@ -49,7 +49,7 @@ public class InitRpcConfig implements CommandLineRunner {
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     @Autowired
     private ApplicationContext applicationContext;
-    public static Map<String,Object> rpcServiceMap=new HashMap<>();
+    public static Map<String, Object> rpcServiceMap = new HashMap<>();
     @Value("${lidou.port}")
     private Integer port;
     @Value("${spring.application.name}")
@@ -60,20 +60,21 @@ public class InitRpcConfig implements CommandLineRunner {
     private InitRpcConfig initRpcConfig;
     @Autowired
     private LoadBalanceService loadBalanceService;
-    public Object getBean(final Class<?> serviceClass, final Object o,String mode) {
+
+    public Object getBean(final Class<?> serviceClass, final Object o, String mode) {
         return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{serviceClass}, (proxy, method, args) -> {
-            BaseRequest baseRequest = new BaseRequest((String)o, method.getName(), args, method.getParameterTypes());
+            BaseRequest baseRequest = new BaseRequest((String) o, method.getName(), args, method.getParameterTypes());
             //负载均衡
             //获得zookeeper路径
             String url;
             String port;
-            String path= PathUtils.addZkPath(serviceClass.getName());
+            String path = PathUtils.addZkPath(serviceClass.getName());
             List<String> children = zkClient.getChildren(path);
             //负载均衡
             String tmp = loadBalanceService.loadBalance(path, children, mode);
             String[] split = tmp.split(":");
-            url=split[0];
-            port=split[1];
+            url = split[0];
+            port = split[1];
             NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
             ClientHandler clientHandler = new ClientHandler();
             Bootstrap bootstrap = new Bootstrap();
@@ -101,72 +102,67 @@ public class InitRpcConfig implements CommandLineRunner {
         init();
         //使@Reference获得代理对象
         Di();
-        NioEventLoopGroup bossGroup=new NioEventLoopGroup(1);
-        NioEventLoopGroup groupGroup=new NioEventLoopGroup(4);
-        ServerBootstrap serverBootstrap=new ServerBootstrap();
-        serverBootstrap.group(bossGroup,groupGroup).channel(NioServerSocketChannel.class)
+        NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        NioEventLoopGroup groupGroup = new NioEventLoopGroup(4);
+        ServerBootstrap serverBootstrap = new ServerBootstrap();
+        serverBootstrap.group(bossGroup, groupGroup).channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast(new ServerDecode());
                         pipeline.addLast(new ServerEncode());
-                        pipeline.addLast(new IdleStateHandler(100,100,100, TimeUnit.SECONDS));
+                        pipeline.addLast(new IdleStateHandler(100, 100, 100, TimeUnit.SECONDS));
                         pipeline.addLast(new ServerHandler());
                     }
                 });
         InetAddress address = InetAddress.getLocalHost();
         String hostAddress = address.getHostAddress();
-        try{
-            ChannelFuture future= serverBootstrap.bind(hostAddress, port).sync();
+        try {
+            ChannelFuture future = serverBootstrap.bind(hostAddress, port).sync();
             log.info("服务端启动");
             future.channel().closeFuture();
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println(hostAddress);
             System.out.println(port);
         }
 
 
-
     }
 
     public void Di() throws IllegalAccessException {
         Map<String, Object> beansWithAnnotation = this.applicationContext.getBeansWithAnnotation(Controller.class);
-        for(Object bean:beansWithAnnotation.values())
-        {
+        for (Object bean : beansWithAnnotation.values()) {
             Field[] fields = bean.getClass().getDeclaredFields();
-            for(Field f:fields)
-            {
+            for (Field f : fields) {
                 f.setAccessible(true);
                 if (f.isAnnotationPresent(Reference.class)) {
                     Class<?> type = f.getType();
                     Reference annotation = f.getAnnotation(Reference.class);
                     //获得代理对象
-                    Object bean1 = this.initRpcConfig.getBean(type, type.getName(),annotation.loadBalance());
+                    Object bean1 = this.initRpcConfig.getBean(type, type.getName(), annotation.loadBalance());
                     //注入代理对象
                     f.set(bean, bean1);
                 }
             }
         }
     }
+
     public void init() throws UnknownHostException {
         Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(LidouService.class);
-        for(Object bean: beansWithAnnotation.values())
-        {
-            Class<?> clazz=bean.getClass();
-            Class<?>[] interfaces=clazz.getInterfaces();
-            for(Class<?> inter:interfaces)
-            {
-                rpcServiceMap.put(inter.getName(),bean);
-                log.info("已经加载的服务"+inter.getName());
+        for (Object bean : beansWithAnnotation.values()) {
+            Class<?> clazz = bean.getClass();
+            Class<?>[] interfaces = clazz.getInterfaces();
+            for (Class<?> inter : interfaces) {
+                rpcServiceMap.put(inter.getName(), bean);
+                log.info("已经加载的服务" + inter.getName());
                 InetAddress address = InetAddress.getLocalHost();
                 String hostAddress = address.getHostAddress();
-                String next=hostAddress+":"+port;
-                zkClient.createPersistent(PathUtils.addZkPath(inter.getName()) ,true);
-                zkClient.createEphemeral(PathUtils.addZkPath(inter.getName())+"/lidou"+next);
-                zkClient.writeData(PathUtils.addZkPath(inter.getName())+"/lidou"+next,next);
+                String next = hostAddress + ":" + port;
+                zkClient.createPersistent(PathUtils.addZkPath(inter.getName()), true);
+                zkClient.createEphemeral(PathUtils.addZkPath(inter.getName()) + "/lidou" + next);
+                zkClient.writeData(PathUtils.addZkPath(inter.getName()) + "/lidou" + next, next);
             }
         }
     }
