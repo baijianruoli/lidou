@@ -7,11 +7,7 @@
 <dependency>
   <groupId>io.github.baijianruoli</groupId>
   <artifactId>lidou</artifactId>
-<<<<<<< HEAD
-  <version>1.2.0</version>
-=======
   <version>1.3.0</version>
->>>>>>> 2f7aa0a3b5542b54aeb0e3b84408cff16af281d7
 </dependency>
 ```
 
