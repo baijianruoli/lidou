@@ -1,7 +1,12 @@
 package io.github.baijianruoli.lidou.service.impl;
 
+import io.github.baijianruoli.lidou.loadBalance.IpHashLoadBalance;
+import io.github.baijianruoli.lidou.loadBalance.RandomLoadBalance;
+import io.github.baijianruoli.lidou.loadBalance.RoundRobinLoadBalance;
+import io.github.baijianruoli.lidou.loadBalance.WeightLoadBalance;
 import io.github.baijianruoli.lidou.service.LoadBalanceService;
 import io.github.baijianruoli.lidou.util.GlobalReferenceMap;
+import io.github.baijianruoli.lidou.util.ZkEntry;
 import org.I0Itec.zkclient.ZkClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,27 +17,31 @@ import java.util.Random;
 @Service
 public class LoadBalanceServiceImpl implements LoadBalanceService {
 
+
     @Autowired
-    private ZkClient zkClient;
+    private IpHashLoadBalance ipHashLoadBalance;
+    @Autowired
+    private RandomLoadBalance randomLoadBalance;
+    @Autowired
+    private RoundRobinLoadBalance roundRobinLoadBalance;
+    @Autowired
+    private WeightLoadBalance weightLoadBalance;
 
     @Override
-    public String loadBalance(String path, List<String> children, String mode) {
-        if ("random".equals(mode)) {
-            path += "/" + children.get(new Random().nextInt(children.size()));
-        } else if ("roundrobin".equals(mode)) {
-            Integer index;
-            if (!GlobalReferenceMap.REFERENCEMAP.containsKey(path)) {
-                GlobalReferenceMap.REFERENCEMAP.put(path, 0);
-                index = 1 % children.size();
-            } else {
-                index = GlobalReferenceMap.REFERENCEMAP.get(path);
-                GlobalReferenceMap.REFERENCEMAP.put(path, (index + 1) % children.size());
-            }
-            path += "/" + children.get(index);
-        } else {
-            path += "/" + children.get(new Random().nextInt(children.size()));
+    public ZkEntry selectLoadBalance(String path, String mode) {
+        switch (mode)
+        {
+            case "random":
+              return randomLoadBalance.localBalance(path);
+            case "roundRobin":
+                return roundRobinLoadBalance.localBalance(path);
+            case "consistentHash":
+                return ipHashLoadBalance.localBalance(path);
+            case "weight":
+                return weightLoadBalance.localBalance(path);
+                default:
+                    return randomLoadBalance.localBalance(path);
         }
-        String temp = (String) zkClient.readData(path);
-        return temp;
+
     }
 }

@@ -43,7 +43,6 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.channel().close();
-//       cause.printStackTrace();
         log.info("发生了异常{}", cause.getMessage());
     }
 

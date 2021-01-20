@@ -1,5 +1,6 @@
 package io.github.baijianruoli.lidou.config;
 
+import com.alibaba.fastjson.JSON;
 import io.github.baijianruoli.lidou.annotation.LidouService;
 import io.github.baijianruoli.lidou.annotation.Reference;
 import io.github.baijianruoli.lidou.code.ClientDecode;
@@ -11,6 +12,7 @@ import io.github.baijianruoli.lidou.code.ServerEncode;
 import io.github.baijianruoli.lidou.service.LoadBalanceService;
 import io.github.baijianruoli.lidou.util.BaseRequest;
 import io.github.baijianruoli.lidou.util.PathUtils;
+import io.github.baijianruoli.lidou.util.ZkEntry;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -30,11 +32,15 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,21 +66,19 @@ public class InitRpcConfig implements CommandLineRunner {
     private InitRpcConfig initRpcConfig;
     @Autowired
     private LoadBalanceService loadBalanceService;
-
     public Object getBean(final Class<?> serviceClass, final Object o, String mode) {
         return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{serviceClass}, (proxy, method, args) -> {
             BaseRequest baseRequest = new BaseRequest((String) o, method.getName(), args, method.getParameterTypes());
             //负载均衡
             //获得zookeeper路径
             String url;
-            String port;
+            int port;
+
             String path = PathUtils.addZkPath(serviceClass.getName());
-            List<String> children = zkClient.getChildren(path);
-            //负载均衡
-            String tmp = loadBalanceService.loadBalance(path, children, mode);
-            String[] split = tmp.split(":");
-            url = split[0];
-            port = split[1];
+            //选择负载均衡算法,获得信息
+            ZkEntry tmp = loadBalanceService.selectLoadBalance(path, mode);
+            url = tmp.getHost();
+            port = tmp.getPort();
             NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
             ClientHandler clientHandler = new ClientHandler();
             Bootstrap bootstrap = new Bootstrap();
@@ -87,7 +91,7 @@ public class InitRpcConfig implements CommandLineRunner {
                     pipeline.addLast(clientHandler);
                 }
             });
-            ChannelFuture future1 = bootstrap.connect(url, Integer.valueOf(port)).sync();
+            ChannelFuture future1 = bootstrap.connect(url, port).sync();
             clientHandler.setPars(baseRequest);
             Object result = executor.submit(clientHandler).get();
             future1.channel().closeFuture();
@@ -124,31 +128,35 @@ public class InitRpcConfig implements CommandLineRunner {
             future.channel().closeFuture();
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(hostAddress);
-            System.out.println(port);
         }
-
 
     }
 
-    public void Di() throws IllegalAccessException {
-        Map<String, Object> beansWithAnnotation = this.applicationContext.getBeansWithAnnotation(Controller.class);
-        for (Object bean : beansWithAnnotation.values()) {
-            Field[] fields = bean.getClass().getDeclaredFields();
-            for (Field f : fields) {
-                f.setAccessible(true);
-                if (f.isAnnotationPresent(Reference.class)) {
-                    Class<?> type = f.getType();
-                    Reference annotation = f.getAnnotation(Reference.class);
-                    //获得代理对象
-                    Object bean1 = this.initRpcConfig.getBean(type, type.getName(), annotation.loadBalance());
-                    //注入代理对象
-                    f.set(bean, bean1);
+    public void Di() {
+        List<Class<? extends Annotation>> classes = Arrays.asList(Controller.class, Service.class, Component.class, Repository.class);
+        classes.forEach(res->{
+            Map<String, Object> beansWithAnnotation = this.applicationContext.getBeansWithAnnotation(res);
+            for (Object bean : beansWithAnnotation.values()) {
+                Field[] fields = bean.getClass().getDeclaredFields();
+                for (Field f : fields) {
+                    f.setAccessible(true);
+                    if (f.isAnnotationPresent(Reference.class)) {
+                        Class<?> type = f.getType();
+                        Reference annotation = f.getAnnotation(Reference.class);
+                        //获得代理对象
+                        Object bean1 = this.initRpcConfig.getBean(type, type.getName(), annotation.loadBalance());
+                        //注入代理对象
+                        try {
+                            f.set(bean, bean1);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
-        }
-    }
+        });
 
+    }
     public void init() throws UnknownHostException {
         Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(LidouService.class);
         for (Object bean : beansWithAnnotation.values()) {
@@ -160,9 +168,21 @@ public class InitRpcConfig implements CommandLineRunner {
                 InetAddress address = InetAddress.getLocalHost();
                 String hostAddress = address.getHostAddress();
                 String next = hostAddress + ":" + port;
-                zkClient.createPersistent(PathUtils.addZkPath(inter.getName()), true);
-                zkClient.createEphemeral(PathUtils.addZkPath(inter.getName()) + "/lidou" + next);
-                zkClient.writeData(PathUtils.addZkPath(inter.getName()) + "/lidou" + next, next);
+                //获取LidouService的权重
+                LidouService annotation = clazz.getAnnotation(LidouService.class);
+                //分装为对象保存到zookeeper
+                ZkEntry zkEntry = new ZkEntry(hostAddress,port,annotation.weight());
+                String prefix=PathUtils.addZkPath(inter.getName());
+                zkClient.createPersistent(prefix, true);
+                try {
+                    zkClient.createEphemeral(prefix + "/lidou" + next);
+                    zkClient.writeData(prefix + "/lidou" + next, JSON.toJSON(zkEntry));
+                }
+                catch (Exception e)
+                {
+                    System.out.println(e.getMessage());
+                }
+
             }
         }
     }

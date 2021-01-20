@@ -14,7 +14,7 @@ public class ClientDecode extends ByteToMessageDecoder {
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
-        BaseResponse deserialize = (BaseResponse) ProtostuffUtils.deserialize(bytes, BaseResponse.class);
+        BaseResponse deserialize = ProtostuffUtils.deserialize(bytes, BaseResponse.class);
         list.add(deserialize);
     }
 }

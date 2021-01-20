@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ZkVo {
-
-    private String host;
-    private Integer port;
-    private String ApplicationName;
+public class ZkEntry {
+       private String host;
+       private int port;
+       private int weight;
 }

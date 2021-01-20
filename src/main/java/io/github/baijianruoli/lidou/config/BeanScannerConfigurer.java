@@ -23,7 +23,7 @@ public class BeanScannerConfigurer implements BeanFactoryPostProcessor, Applicat
         if (property == null)
             property = "io.github.baijianruoli";
         scanner.setResourceLoader(applicationContext);
-        int count = scanner.scan(property);
+        scanner.scan(property);
     }
 
     @Override
