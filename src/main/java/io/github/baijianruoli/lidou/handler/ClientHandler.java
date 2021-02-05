@@ -2,6 +2,7 @@ package io.github.baijianruoli.lidou.handler;
 
 import io.github.baijianruoli.lidou.util.BaseRequest;
 import io.github.baijianruoli.lidou.util.BaseResponse;
+import io.github.baijianruoli.lidou.util.GlobalReferenceMap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
@@ -21,16 +22,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter implements Calla
     private BaseRequest pars;
     private Semaphore semaphore = new Semaphore(0);
     private Semaphore resultLock = new Semaphore(0);
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
-            IdleStateEvent event = (IdleStateEvent) evt;
-            if (event.state() == IdleState.WRITER_IDLE) {
-                ctx.writeAndFlush(new BaseRequest("heart"));
-            }
-        }
-    }
+    private String address;
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -54,11 +46,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter implements Calla
         semaphore.acquire();
         this.context.channel().writeAndFlush(this.pars);
         resultLock.acquire();
+        semaphore.release();
         return this.result;
     }
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-//       log.info("离开{}",ctx.channel().remoteAddress());
+        GlobalReferenceMap.CHANNELMAP.remove(address);
+//       log.info("离开{}",ctx.channel().localAddress());
     }
 }

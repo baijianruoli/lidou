@@ -13,28 +13,15 @@ import java.lang.reflect.Method;
 
 @Slf4j
 public class ServerHandler extends ChannelInboundHandlerAdapter {
-    private int lossCount = 0;
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent i = (IdleStateEvent) evt;
-            String eventType = null;
             switch (i.state()) {
                 case READER_IDLE:
-                    eventType = "读空闲";
-                    lossCount++;
-                    log.warn("{}读空闲...{}", ctx.channel().remoteAddress());
-                    if (lossCount > 2) {
-                        log.warn("{}通道关闭", ctx.channel().remoteAddress());
-                        ctx.close();
-                    }
-                    break;
-                case WRITER_IDLE:
-                    eventType = "写空闲";
-                    break;
-                case ALL_IDLE:
-                    eventType = "读写空闲";
+//                    log.warn("{}读空闲...{}", ctx.channel().remoteAddress());
+                        ctx.channel().close();
                     break;
             }
         }
@@ -70,12 +57,12 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-//        log.info("{}离开注册中心",ctx.channel().remoteAddress());
+//        log.info("{}离开",ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//       log.info("{}加入注册中心",ctx.channel().remoteAddress());
+//       log.info("{}加入",ctx.channel().remoteAddress());
     }
 
 

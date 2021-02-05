@@ -11,6 +11,7 @@ import io.github.baijianruoli.lidou.code.ServerDecode;
 import io.github.baijianruoli.lidou.code.ServerEncode;
 import io.github.baijianruoli.lidou.service.LoadBalanceService;
 import io.github.baijianruoli.lidou.util.BaseRequest;
+import io.github.baijianruoli.lidou.util.GlobalReferenceMap;
 import io.github.baijianruoli.lidou.util.PathUtils;
 import io.github.baijianruoli.lidou.util.ZkEntry;
 import io.netty.bootstrap.Bootstrap;
@@ -73,29 +74,37 @@ public class InitRpcConfig implements CommandLineRunner {
             //获得zookeeper路径
             String url;
             int port;
-
             String path = PathUtils.addZkPath(serviceClass.getName());
             //选择负载均衡算法,获得信息
             ZkEntry tmp = loadBalanceService.selectLoadBalance(path, mode);
             url = tmp.getHost();
             port = tmp.getPort();
-            NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
-            ClientHandler clientHandler = new ClientHandler();
-            Bootstrap bootstrap = new Bootstrap();
-            bootstrap.group(bossGroup).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true).handler(new ChannelInitializer<SocketChannel>() {
-                protected void initChannel(SocketChannel socketChannel) throws Exception {
-                    ChannelPipeline pipeline = socketChannel.pipeline();
-                    pipeline.addLast(new ClientEncode());
-                    pipeline.addLast(new ClientDecode());
-                    pipeline.addLast(new IdleStateHandler(80L, 80L, 80L, TimeUnit.SECONDS));
-                    pipeline.addLast(clientHandler);
-                }
-            });
-            ChannelFuture future1 = bootstrap.connect(url, port).sync();
+            ClientHandler clientHandler;
+            if(GlobalReferenceMap.CHANNELMAP.containsKey(url+port))
+            {
+              clientHandler=GlobalReferenceMap.CHANNELMAP.get(url+port);
+            }
+            else
+            {
+                NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
+                clientHandler = new ClientHandler();
+                Bootstrap bootstrap = new Bootstrap();
+                bootstrap.group(bossGroup).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true).handler(new ChannelInitializer<SocketChannel>() {
+                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        ChannelPipeline pipeline = socketChannel.pipeline();
+                        pipeline.addLast(new ClientEncode());
+                        pipeline.addLast(new ClientDecode());
+                        pipeline.addLast(clientHandler);
+                    }
+                });
+                ChannelFuture future1 = bootstrap.connect(url, port).sync();
+                GlobalReferenceMap.CHANNELMAP.put(url+port,clientHandler);
+                clientHandler.setAddress(url+port);
+                future1.channel().closeFuture();
+            }
+            //设置参数
             clientHandler.setPars(baseRequest);
             Object result = executor.submit(clientHandler).get();
-            future1.channel().closeFuture();
-            bossGroup.shutdownGracefully();
             return result;
         });
     }
@@ -107,7 +116,7 @@ public class InitRpcConfig implements CommandLineRunner {
         //使@Reference获得代理对象
         Di();
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        NioEventLoopGroup groupGroup = new NioEventLoopGroup(4);
+        NioEventLoopGroup groupGroup = new NioEventLoopGroup();
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, groupGroup).channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -116,7 +125,7 @@ public class InitRpcConfig implements CommandLineRunner {
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast(new ServerDecode());
                         pipeline.addLast(new ServerEncode());
-                        pipeline.addLast(new IdleStateHandler(100, 100, 100, TimeUnit.SECONDS));
+                        pipeline.addLast(new IdleStateHandler(10, 10, 10, TimeUnit.SECONDS));
                         pipeline.addLast(new ServerHandler());
                     }
                 });
@@ -124,7 +133,7 @@ public class InitRpcConfig implements CommandLineRunner {
         String hostAddress = address.getHostAddress();
         try {
             ChannelFuture future = serverBootstrap.bind(hostAddress, port).sync();
-            log.info("服务端启动");
+//            log.info("服务端启动");
             future.channel().closeFuture();
         } catch (Exception e) {
             e.printStackTrace();

@@ -7,6 +7,7 @@ import io.github.baijianruoli.lidou.loadBalance.WeightLoadBalance;
 import io.github.baijianruoli.lidou.service.LoadBalanceService;
 import io.github.baijianruoli.lidou.util.GlobalReferenceMap;
 import io.github.baijianruoli.lidou.util.ZkEntry;
+import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.ZkClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@Slf4j
 public class LoadBalanceServiceImpl implements LoadBalanceService {
 
 
@@ -40,6 +42,7 @@ public class LoadBalanceServiceImpl implements LoadBalanceService {
             case "weight":
                 return weightLoadBalance.localBalance(path);
                 default:
+                    log.warn("{}策略不存在,默认跳转为随机",mode);
                     return randomLoadBalance.localBalance(path);
         }
 
