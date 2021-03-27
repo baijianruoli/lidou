@@ -5,6 +5,7 @@ import io.github.baijianruoli.lidou.annotation.LidouService;
 import io.github.baijianruoli.lidou.annotation.Reference;
 import io.github.baijianruoli.lidou.code.ClientDecode;
 import io.github.baijianruoli.lidou.code.ClientEncode;
+import io.github.baijianruoli.lidou.exception.LidouException;
 import io.github.baijianruoli.lidou.handler.ClientHandler;
 import io.github.baijianruoli.lidou.handler.ServerHandler;
 import io.github.baijianruoli.lidou.code.ServerDecode;
@@ -53,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class InitRpcConfig implements CommandLineRunner {
 
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ExecutorService executor = Executors.newFixedThreadPool(1024);
     @Autowired
     private ApplicationContext applicationContext;
     public static Map<String, Object> rpcServiceMap = new HashMap<>();
@@ -67,6 +68,7 @@ public class InitRpcConfig implements CommandLineRunner {
     private InitRpcConfig initRpcConfig;
     @Autowired
     private LoadBalanceService loadBalanceService;
+
     public Object getBean(final Class<?> serviceClass, final Object o, String mode) {
         return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{serviceClass}, (proxy, method, args) -> {
             BaseRequest baseRequest = new BaseRequest((String) o, method.getName(), args, method.getParameterTypes());
@@ -76,36 +78,43 @@ public class InitRpcConfig implements CommandLineRunner {
             int port;
             String path = PathUtils.addZkPath(serviceClass.getName());
             //选择负载均衡算法,获得信息
-            ZkEntry tmp = loadBalanceService.selectLoadBalance(path, mode);
-            url = tmp.getHost();
-            port = tmp.getPort();
-            ClientHandler clientHandler;
-            if(GlobalReferenceMap.CHANNELMAP.containsKey(url+port))
+            try{
+                ZkEntry tmp = loadBalanceService.selectLoadBalance(path, mode);
+                url = tmp.getHost();
+                port = tmp.getPort();
+                ClientHandler clientHandler;
+                if(GlobalReferenceMap.CHANNELMAP.containsKey(url+port)&&GlobalReferenceMap.CHANNELMAP.get(url+port).getSemaphore().availablePermits()==1)
+                {
+                    clientHandler=GlobalReferenceMap.CHANNELMAP.get(url+port);
+                }
+                else
+                {
+                    NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
+                    clientHandler = new ClientHandler();
+                    Bootstrap bootstrap = new Bootstrap();
+                    bootstrap.group(bossGroup).channel(NioSocketChannel.class)
+                            .option(ChannelOption.TCP_NODELAY, true)
+                            .handler(new ChannelInitializer<SocketChannel>() {
+                                protected void initChannel(SocketChannel socketChannel) throws Exception {
+                                    ChannelPipeline pipeline = socketChannel.pipeline();
+                                    pipeline.addLast(new ClientEncode());
+                                    pipeline.addLast(new ClientDecode());
+                                    pipeline.addLast(clientHandler);
+                                }
+                            });
+                    ChannelFuture future1 = bootstrap.connect(url, port).sync();
+                    GlobalReferenceMap.CHANNELMAP.put(url+port,clientHandler);
+                    clientHandler.setAddress(url+port);
+                    future1.channel().closeFuture();
+                }
+                //设置参数
+                clientHandler.setPars(baseRequest);
+                Object result = executor.submit(clientHandler).get();
+                return result;
+            }catch (Exception e)
             {
-              clientHandler=GlobalReferenceMap.CHANNELMAP.get(url+port);
+                throw  new LidouException("未找到有效节点");
             }
-            else
-            {
-                NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
-                clientHandler = new ClientHandler();
-                Bootstrap bootstrap = new Bootstrap();
-                bootstrap.group(bossGroup).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true).handler(new ChannelInitializer<SocketChannel>() {
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        ChannelPipeline pipeline = socketChannel.pipeline();
-                        pipeline.addLast(new ClientEncode());
-                        pipeline.addLast(new ClientDecode());
-                        pipeline.addLast(clientHandler);
-                    }
-                });
-                ChannelFuture future1 = bootstrap.connect(url, port).sync();
-                GlobalReferenceMap.CHANNELMAP.put(url+port,clientHandler);
-                clientHandler.setAddress(url+port);
-                future1.channel().closeFuture();
-            }
-            //设置参数
-            clientHandler.setPars(baseRequest);
-            Object result = executor.submit(clientHandler).get();
-            return result;
         });
     }
 
@@ -125,7 +134,7 @@ public class InitRpcConfig implements CommandLineRunner {
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast(new ServerDecode());
                         pipeline.addLast(new ServerEncode());
-                        pipeline.addLast(new IdleStateHandler(10, 10, 10, TimeUnit.SECONDS));
+                        pipeline.addLast(new IdleStateHandler(30, 30, 30, TimeUnit.SECONDS));
                         pipeline.addLast(new ServerHandler());
                     }
                 });

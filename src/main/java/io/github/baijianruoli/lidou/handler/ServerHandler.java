@@ -35,6 +35,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+
         BaseRequest request = (BaseRequest) msg;
         if ("heart".equals(request.getClassName()))
             return;
