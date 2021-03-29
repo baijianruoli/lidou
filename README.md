@@ -1,6 +1,7 @@
 # lidou
 基于netty和zookeeper的自制rpc框架
 
+[文档介绍](https://blog.csdn.net/bai1112/article/details/110404380)
 # Apache Maven
 
 ```
