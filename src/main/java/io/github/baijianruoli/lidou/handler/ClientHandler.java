@@ -20,8 +20,11 @@ public class ClientHandler extends ChannelInboundHandlerAdapter implements Calla
     private ChannelHandlerContext context;
     private Object result;
     private BaseRequest pars;
+    //起始信号量
     private Semaphore semaphore = new Semaphore(0);
+    //结果信号量
     private Semaphore resultLock = new Semaphore(0);
+
     private String address;
 
     @Override
@@ -52,6 +55,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter implements Calla
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        //管道断开
         GlobalReferenceMap.CHANNELMAP.remove(address);
 //       log.info("离开{}",ctx.channel().localAddress());
     }

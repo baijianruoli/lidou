@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface LoadBalanceService {
     //负载均衡
-    public ZkEntry selectLoadBalance(String path, String mode);
+    public ZkEntry selectLoadBalance(String path, String mode) throws Exception;
 }

@@ -30,7 +30,7 @@ public class LoadBalanceServiceImpl implements LoadBalanceService {
     private WeightLoadBalance weightLoadBalance;
 
     @Override
-    public ZkEntry selectLoadBalance(String path, String mode) {
+    public ZkEntry selectLoadBalance(String path, String mode) throws  Exception{
         switch (mode)
         {
             case "random":

@@ -37,10 +37,13 @@ public class PathUtils {
          });
 
         GlobalReferenceMap.ZKLISTENMAP.put(path,zkEntries);
-        zkClient.subscribeChildChanges(path,(cur,child)->{
 
+        zkClient.subscribeChildChanges(path,(cur,child)->{
             zkClient.unsubscribeChildChanges(path,(c,v)->{});
             //删除缓存
+            System.out.println(path);
+            System.out.println(cur);
+            System.out.println(child);
            GlobalReferenceMap.ZKLISTENMAP.remove(path);
            //删除一致性hash槽
            ConSistentHashingWithoutVirtualNode.removeAll();

@@ -22,12 +22,14 @@ public class RoundRobinLoadBalance implements  LoadBalance{
         if (GlobalReferenceMap.REFERENCEMAP.containsKey(path)) {
             index = GlobalReferenceMap.REFERENCEMAP.get(path);
         }
-        GlobalReferenceMap.REFERENCEMAP.put(path, (index + 1) % GlobalReferenceMap.ZKLISTENMAP.size());
+
         if(!GlobalReferenceMap.ZKLISTENMAP.containsKey(path))
         {
             List<String> children = zkClient.getChildren(path);
             pathUtils.addListAndWatch(path,children);
         }
+        //自增
+        GlobalReferenceMap.REFERENCEMAP.put(path, (index + 1) % GlobalReferenceMap.ZKLISTENMAP.get(path).size());
         return GlobalReferenceMap.ZKLISTENMAP.get(path).get(index);
 
     }
