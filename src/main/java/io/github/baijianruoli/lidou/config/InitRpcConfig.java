@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class InitRpcConfig implements CommandLineRunner {
 
-    private ExecutorService executor = Executors.newFixedThreadPool(1024);
+    private ExecutorService executor = Executors.newFixedThreadPool(8);
     @Autowired
     private ApplicationContext applicationContext;
     public static Map<String, Object> rpcServiceMap = new HashMap<>();

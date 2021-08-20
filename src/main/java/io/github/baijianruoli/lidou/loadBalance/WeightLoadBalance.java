@@ -34,7 +34,6 @@ public class WeightLoadBalance implements  LoadBalance {
                     list.add(zkEntry);
                 });
             });
-                ZkEntry zkEntry= list.get(new Random().nextInt(list.size()));
-                return zkEntry;
+        return list.get(new Random().nextInt(list.size()));
         }
 }
