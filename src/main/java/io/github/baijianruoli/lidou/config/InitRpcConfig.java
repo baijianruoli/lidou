@@ -78,17 +78,14 @@ public class InitRpcConfig implements CommandLineRunner {
             int port;
             String path = PathUtils.addZkPath(serviceClass.getName());
             //选择负载均衡算法,获得信息
-            try{
+            try {
                 ZkEntry tmp = loadBalanceService.selectLoadBalance(path, mode);
                 url = tmp.getHost();
                 port = tmp.getPort();
                 ClientHandler clientHandler;
-                if(GlobalReferenceMap.CHANNELMAP.containsKey(url+port)&&GlobalReferenceMap.CHANNELMAP.get(url+port).getSemaphore().availablePermits()==1)
-                {
-                    clientHandler=GlobalReferenceMap.CHANNELMAP.get(url+port);
-                }
-                else
-                {
+                if (GlobalReferenceMap.CHANNELMAP.containsKey(url + port) && GlobalReferenceMap.CHANNELMAP.get(url + port).getSemaphore().availablePermits() == 1) {
+                    clientHandler = GlobalReferenceMap.CHANNELMAP.get(url + port);
+                } else {
                     NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
                     clientHandler = new ClientHandler();
                     Bootstrap bootstrap = new Bootstrap();
@@ -103,17 +100,16 @@ public class InitRpcConfig implements CommandLineRunner {
                                 }
                             });
                     ChannelFuture future1 = bootstrap.connect(url, port).sync();
-                    GlobalReferenceMap.CHANNELMAP.put(url+port,clientHandler);
-                    clientHandler.setAddress(url+port);
+                    GlobalReferenceMap.CHANNELMAP.put(url + port, clientHandler);
+                    clientHandler.setAddress(url + port);
                     future1.channel().closeFuture();
                 }
                 //设置参数
                 clientHandler.setPars(baseRequest);
                 Object result = executor.submit(clientHandler).get();
                 return result;
-            }catch (Exception e)
-            {
-                throw  new LidouException("未找到有效节点");
+            } catch (Exception e) {
+                throw new LidouException("未找到有效节点");
             }
         });
     }
@@ -152,7 +148,7 @@ public class InitRpcConfig implements CommandLineRunner {
 
     public void Di() {
         List<Class<? extends Annotation>> classes = Arrays.asList(Controller.class, Service.class, Component.class, Repository.class);
-        classes.forEach(res->{
+        classes.forEach(res -> {
             Map<String, Object> beansWithAnnotation = this.applicationContext.getBeansWithAnnotation(res);
             for (Object bean : beansWithAnnotation.values()) {
                 Field[] fields = bean.getClass().getDeclaredFields();
@@ -175,6 +171,7 @@ public class InitRpcConfig implements CommandLineRunner {
         });
 
     }
+
     public void init() throws UnknownHostException {
         Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(LidouService.class);
         for (Object bean : beansWithAnnotation.values()) {
@@ -189,15 +186,13 @@ public class InitRpcConfig implements CommandLineRunner {
                 //获取LidouService的权重
                 LidouService annotation = clazz.getAnnotation(LidouService.class);
                 //分装为对象保存到zookeeper
-                ZkEntry zkEntry = new ZkEntry(hostAddress,port,annotation.weight());
-                String prefix=PathUtils.addZkPath(inter.getName());
+                ZkEntry zkEntry = new ZkEntry(hostAddress, port, annotation.weight());
+                String prefix = PathUtils.addZkPath(inter.getName());
                 zkClient.createPersistent(prefix, true);
                 try {
                     zkClient.createEphemeral(prefix + "/lidou" + next);
                     zkClient.writeData(prefix + "/lidou" + next, JSON.toJSON(zkEntry));
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
 

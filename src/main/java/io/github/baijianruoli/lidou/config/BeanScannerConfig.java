@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class BeanScannerConfigure implements BeanFactoryPostProcessor, ApplicationContextAware {
+public class BeanScannerConfig implements BeanFactoryPostProcessor, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 

@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "lidou.servicePackage",
+      "type": "java.lang.String",
+      "description": "service 扫描路径."
+    },
+    {
+      "name": "lidou.port",
+      "type": "java.lang.Integer",
+      "description": "rpc端口."
+    },
+    {
+      "name": "lidou.zookeeper.url",
+      "type": "java.lang.String",
+      "description": "zookeeper 路径."
+    }
+  ]
+}

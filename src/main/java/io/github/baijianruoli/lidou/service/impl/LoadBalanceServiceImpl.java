@@ -30,20 +30,19 @@ public class LoadBalanceServiceImpl implements LoadBalanceService {
     private WeightLoadBalance weightLoadBalance;
 
     @Override
-    public ZkEntry selectLoadBalance(String path, String mode) throws  Exception{
-        switch (mode)
-        {
+    public ZkEntry selectLoadBalance(String path, String mode) throws Exception {
+        switch (mode) {
             case "random":
-              return randomLoadBalance.localBalance(path);
+                return randomLoadBalance.localBalance(path);
             case "roundRobin":
                 return roundRobinLoadBalance.localBalance(path);
             case "consistentHash":
                 return ipHashLoadBalance.localBalance(path);
             case "weight":
                 return weightLoadBalance.localBalance(path);
-                default:
-                    log.warn("{}策略不存在,默认跳转为随机",mode);
-                    return randomLoadBalance.localBalance(path);
+            default:
+                log.warn("{}策略不存在,默认跳转为随机", mode);
+                return randomLoadBalance.localBalance(path);
         }
 
     }
