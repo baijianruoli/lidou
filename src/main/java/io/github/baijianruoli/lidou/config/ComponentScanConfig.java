@@ -14,9 +14,6 @@ import org.springframework.stereotype.Component;
         ,"io.github.baijianruoli.lidou.service",
         "io.github.baijianruoli.lidou.util"
 })
-@EnableConfigurationProperties({
-        LidouProperties.class
-})
 public class ComponentScanConfig {
 
 }

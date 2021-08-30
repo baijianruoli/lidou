@@ -7,5 +7,9 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 public @interface Reference {
     String loadBalance() default "random";
-    int rateLimit() default 1000;
+
+    String fallback() default "";
+
+    int tokenLimit() default 1000;
+
 }

@@ -5,11 +5,11 @@ import io.github.baijianruoli.lidou.annotation.LidouService;
 import io.github.baijianruoli.lidou.annotation.Reference;
 import io.github.baijianruoli.lidou.code.ClientDecode;
 import io.github.baijianruoli.lidou.code.ClientEncode;
+import io.github.baijianruoli.lidou.code.ServerDecode;
+import io.github.baijianruoli.lidou.code.ServerEncode;
 import io.github.baijianruoli.lidou.exception.LidouException;
 import io.github.baijianruoli.lidou.handler.ClientHandler;
 import io.github.baijianruoli.lidou.handler.ServerHandler;
-import io.github.baijianruoli.lidou.code.ServerDecode;
-import io.github.baijianruoli.lidou.code.ServerEncode;
 import io.github.baijianruoli.lidou.service.LoadBalanceService;
 import io.github.baijianruoli.lidou.util.BaseRequest;
 import io.github.baijianruoli.lidou.util.GlobalReferenceMap;
@@ -36,9 +36,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -69,14 +71,20 @@ public class InitRpcConfig implements CommandLineRunner {
     @Autowired
     private LoadBalanceService loadBalanceService;
 
-    public Object getBean(final Class<?> serviceClass, final Object o, String mode) {
+    public Object getBean(Object bean, final Class<?> serviceClass, final Object o, String mode, String fallbackMethod) {
+        // jdk动态代理
         return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{serviceClass}, (proxy, method, args) -> {
             BaseRequest baseRequest = new BaseRequest((String) o, method.getName(), args, method.getParameterTypes());
+
+
             //负载均衡
             //获得zookeeper路径
             String url;
             int port;
             String path = PathUtils.addZkPath(serviceClass.getName());
+            //TODO 限流
+
+            //TODO 熔断
             //选择负载均衡算法,获得信息
             try {
                 ZkEntry tmp = loadBalanceService.selectLoadBalance(path, mode);
@@ -106,9 +114,17 @@ public class InitRpcConfig implements CommandLineRunner {
                 }
                 //设置参数
                 clientHandler.setPars(baseRequest);
-                Object result = executor.submit(clientHandler).get();
-                return result;
+                return executor.submit(clientHandler).get();
             } catch (Exception e) {
+                //TODO 降级
+                if (!StringUtils.isEmpty(fallbackMethod)) {
+                    try {
+                        Method declaredMethod = bean.getClass().getDeclaredMethod(fallbackMethod, method.getParameterTypes());
+                        return declaredMethod.invoke(bean, args);
+                    } catch (NoSuchMethodException es) {
+                        es.printStackTrace();
+                    }
+                }
                 throw new LidouException("未找到有效节点");
             }
         });
@@ -138,7 +154,6 @@ public class InitRpcConfig implements CommandLineRunner {
         String hostAddress = address.getHostAddress();
         try {
             ChannelFuture future = serverBootstrap.bind(hostAddress, port).sync();
-//            log.info("服务端启动");
             future.channel().closeFuture();
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,8 +172,10 @@ public class InitRpcConfig implements CommandLineRunner {
                     if (f.isAnnotationPresent(Reference.class)) {
                         Class<?> type = f.getType();
                         Reference annotation = f.getAnnotation(Reference.class);
+                        // 限流
+                        int token = annotation.tokenLimit();
                         //获得代理对象
-                        Object bean1 = this.initRpcConfig.getBean(type, type.getName(), annotation.loadBalance());
+                        Object bean1 = this.initRpcConfig.getBean(bean, type, type.getName(), annotation.loadBalance(), annotation.fallback());
                         //注入代理对象
                         try {
                             f.set(bean, bean1);
